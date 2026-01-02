@@ -18,6 +18,8 @@ class CourseFactory extends Factory
     {
         return [
             'title' => $this->faker->sentence(),
+            'description' => $this->faker->paragraph(),
+            'released_at' => $this->faker->optional()->dateTime(),
         ];
     }
 }

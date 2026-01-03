@@ -10,20 +10,13 @@ uses(RefreshDatabase::class);
 
 it('shows courses overview page', function () {
     // Arrange
-    Course::factory()->create([
-        'title' => 'My first course',
-        'description' => 'This is my first course description',
-        'released_at' => Carbon::now(),
-    ]);
-    Course::factory()->create([
-        'title' => 'My second course',
-        'description' => 'This is my second course description',
-    ]);
+    $firstCourse = Course::factory()->released(Carbon::now())->create();
+    $secondCourse = Course::factory()->released(Carbon::tomorrow())->create();
 
     // Act and Assert
     get(route('home'))->assertSeeText([
-        'My first course',
-        'This is my first course description',
+        $firstCourse->title,
+        $firstCourse->description,
     ]);
 
     // Assert
@@ -33,19 +26,19 @@ it('shows courses overview page', function () {
 
 it('shows only released courses', function () {
     // Arrange
-    Course::factory()->create([
+    $releasedCourse = Course::factory()->released(Carbon::yesterday())->create([
         'title' => 'My first course',
         'released_at' => Carbon::yesterday(),
     ]);
-    Course::factory()->create([
+    $unreleasedCourse = Course::factory()->create([
         'title' => 'My second course',
     ]);
 
     // Act
     get(route('home'))->assertSeeText([
-        'My first course',
+        $releasedCourse->title,
     ])->assertDontSeeText([
-        'My second course',
+        $unreleasedCourse->title,
     ]);
 
     // Assert
@@ -54,19 +47,13 @@ it('shows only released courses', function () {
 
 it('shows courses by release data', function () {
     // Arrange
-    Course::factory()->create([
-        'title' => 'My first course',
-        'released_at' => Carbon::yesterday(),
-    ]);
-    Course::factory()->create([
-        'title' => 'My second course',
-        'released_at' => Carbon::now(),
-    ]);
+    $releasedCourse = Course::factory()->released(Carbon::yesterday())->create();
+    $newestCourse = Course::factory()->released(Carbon::now())->create();
 
     // Act
     get(route('home'))->assertSeeTextInOrder([
-        'My first course',
-        'My second course',
+        $newestCourse->title,
+        $releasedCourse->title,
     ]);
 
     // Assert
